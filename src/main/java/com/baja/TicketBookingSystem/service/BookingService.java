@@ -54,4 +54,15 @@ public class BookingService {
         dto.setAuditoriumName(booking.getShow().getAuditorium().getName());
         return dto;
     }
+
+    @Transactional
+    public BookingResponseDto cancelBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        Booking savedBooking = bookingRepository.save(booking);
+        
+        return mapToDto(savedBooking);
+    }
 }

@@ -1,10 +1,10 @@
-package com.baja.day4;
+package com.baja.TicketBookingSystem;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class Day4ApplicationTests {
+class TicketBookingSystemApplicationTests {
 
 	@Test
 	void contextLoads() {
