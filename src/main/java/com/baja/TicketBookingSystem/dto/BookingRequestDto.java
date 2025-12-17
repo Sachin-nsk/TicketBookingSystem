@@ -1,6 +1,6 @@
 package com.baja.TicketBookingSystem.dto;
 
-import lombok.Data;
+import lombok.*;
 
 @Data
 public class BookingRequestDto {
