@@ -82,8 +82,8 @@ class BookingIntegrationTest {
 
     @Test
     void createBooking_shouldPersistToRealDatabase() throws Exception {
-        BookingRequestDto request = new BookingRequestDto();
-        request.setUserId(1L); 
+        BookingRequestDto request = new BookingRequestDto(); 
+        //request.setUserId(1L); 
         request.setShowId(1L);
 
         mockMvc.perform(post("/api/bookings")

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -18,13 +19,26 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ShowRepository showRepository;
+    private final ShowSeatRepository showSeatRepository;
 
     @Transactional
-    public BookingResponseDto createBooking(BookingRequestDto request) {
-        User user = userRepository.findById(request.getUserId())
+    public BookingResponseDto createBooking(BookingRequestDto request, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Show show = showRepository.findById(request.getShowId())
                 .orElseThrow(() -> new ResourceNotFoundException("Show not found"));
+
+        List<ShowSeat> selectedSeats = showSeatRepository.findAllByIdWithLock(request.getShowSeatIds());
+
+        if(selectedSeats.isEmpty() || selectedSeats.size() != request.getShowSeatIds().size()) {
+            throw new ResourceNotFoundException("One or more seats not found");
+        }
+
+        for(ShowSeat seat: selectedSeats) {
+            if(seat.getStatus() != ShowSeatStatus.AVAILABLE) {
+                throw new IllegalStateException("Seat " + seat.getSeat().getSeatNumber() + " is already booked");
+            }
+        }
 
         Booking booking = new Booking();
         booking.setUser(user);
@@ -33,6 +47,12 @@ public class BookingService {
         booking.setStatus(BookingStatus.CONFIRMED);
         
         Booking savedBooking = bookingRepository.save(booking);
+
+        for(ShowSeat seat: selectedSeats) {
+            seat.setStatus(ShowSeatStatus.BOOKED);
+            seat.setBooking(savedBooking);
+            showSeatRepository.save(seat);
+        }
 
         return mapToDto(savedBooking);
     }
