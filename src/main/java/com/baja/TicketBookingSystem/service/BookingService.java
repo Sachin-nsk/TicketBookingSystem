@@ -8,6 +8,8 @@ import com.baja.TicketBookingSystem.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.kafka.core.KafkaTemplate;
+import com.baja.TicketBookingSystem.event.BookingCreatedEvent;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +22,8 @@ public class BookingService {
     private final UserRepository userRepository;
     private final ShowRepository showRepository;
     private final ShowSeatRepository showSeatRepository;
+
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Transactional
     public BookingResponseDto createBooking(BookingRequestDto request, String userEmail) {
@@ -40,6 +44,7 @@ public class BookingService {
             }
         }
 
+
         Booking booking = new Booking();
         booking.setUser(user);
         booking.setShow(show);
@@ -47,6 +52,18 @@ public class BookingService {
         booking.setStatus(BookingStatus.CONFIRMED);
         
         Booking savedBooking = bookingRepository.save(booking);
+
+        Double totalPrice = selectedSeats.stream().mapToDouble(ShowSeat::getPrice).sum();
+
+        BookingCreatedEvent event = new BookingCreatedEvent(
+            user.getEmail(),
+            show.getEvent().getTitle(),
+            savedBooking.getId().toString(),
+            totalPrice
+        );
+
+        kafkaTemplate.send("booking-notifications", event);
+        System.out.println("--- Kafka Message Sent ---");
 
         for(ShowSeat seat: selectedSeats) {
             seat.setStatus(ShowSeatStatus.BOOKED);
