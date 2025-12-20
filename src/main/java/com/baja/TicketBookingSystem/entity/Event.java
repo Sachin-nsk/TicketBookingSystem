@@ -17,6 +17,6 @@ public class Event {
     private String genre;
     private Integer durationMinutes;
 
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Show> shows;
 }
