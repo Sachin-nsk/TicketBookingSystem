@@ -64,7 +64,7 @@ services:
       
       # Connect to Redis & Kafka Containers
       SPRING_DATA_REDIS_HOST: redis
-      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
 
 volumes:
   redis-data:
